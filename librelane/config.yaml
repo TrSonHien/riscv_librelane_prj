@@ -1,0 +1,250 @@
+meta:
+  version: 3
+  flow: Chip
+  substituting_steps:
+
+    # Render the layout after sealring insertion
+    KLayout.Render: null
+    +KLayout.SealRing: KLayout.Render
+
+    # Disable KLayout DRC
+    #KLayout.DRC: null
+    #Checker.KLayoutDRC: null
+
+    # Disable KLayout antenna check
+    #KLayout.Antenna: null
+    #Checker.KLayoutAntenna: null
+
+    # Disable KLayout density check
+    #KLayout.Density: null
+    #Checker.KLayoutDensity: null
+
+    # Save time during development
+    # Enable for sign-off
+    #OpenROAD.IRDropReport: null
+    #Magic.DRC: null
+    #Checker.MagicDRC: null
+    #KLayout.XOR: null
+    #Netgen.LVS: null
+    #Checker.LVS: null
+
+DESIGN_NAME: chip_top
+VERILOG_FILES:
+- dir::../src/chip_top.sv
+- dir::../src/chip_core.sv
+- dir::../src/Core/CORE.v
+- dir::../src/Bus/AXI4_Lite/AXI_TOP.v
+- dir::../src/Bus/AXI4_Lite/AXI_Manager.v
+- dir::../src/Bus/AXI4_Lite/AXI_Interconnect.v
+- dir::../src/Bus/AXI4_Lite/AXI_RAM_Slave.v
+- dir::../src/Bus/AXI4_Lite/AXI_ROM_Slave.v
+- dir::../src/Bus/AXI4_Lite/AXI_VGA_Slave.v
+- dir::../src/Bus/AXI4_Lite/AXI_to_APB4_Bridge.v
+- dir::../src/Bus/APB4/APB4_TOP.v
+- dir::../src/Bus/APB4/APB4_Interconnect.v
+- dir::../src/Bus/APB4/APB4_GPIO_Slave.v
+- dir::../src/Bus/APB4/APB4_UART_Slave.v
+- dir::../src/IP_CORE/CPU.v
+- dir::../src/IP_CORE/Control_Unit.v
+- dir::../src/IP_CORE/Control.v
+- dir::../src/IP_CORE/Main_Decoder.v
+- dir::../src/IP_CORE/ALU_Decoder.v
+- dir::../src/IP_CORE/ALU.v
+- dir::../src/IP_CORE/MDU.v
+- dir::../src/IP_CORE/ImmGen.v
+- dir::../src/IP_CORE/Register_File.v
+- dir::../src/IP_CORE/Branch_Unit.v
+- dir::../src/IP_CORE/Fetch_Cycle.v
+- dir::../src/IP_CORE/Decode_Cycle.v
+- dir::../src/IP_CORE/Execute_Cycle.v
+- dir::../src/IP_CORE/Memory_Cycle.v
+- dir::../src/IP_CORE/Writeback_Cycle.v
+- dir::../src/IP_CORE/Hazard_Unit.v
+- dir::../src/IP_CORE/Forwarding_Unit.v
+- dir::../src/IP_CORE/Program_Counter.v
+- dir::../src/IP_CORE/PC_Adder.v
+- dir::../src/IP_CORE/PC_MUX.v
+- dir::../src/IP_CORE/Mux_3_by_1.v
+- dir::../src/IP_CORE/Stall_Unit.v
+- dir::../src/IP_CORE/Instr_Memory.v
+- dir::../src/Peripherals/RAM/Data_RAM.v
+- dir::../src/Peripherals/GPIO/GPIO.v
+- dir::../src/Peripherals/GPIO/Hex7_Seg.v
+- dir::../src/Peripherals/GPIO/Seg7_Decoder.v
+- dir::../src/Peripherals/UART/UART.v
+- dir::../src/Peripherals/UART/Buad_Gen.v
+- dir::../src/Peripherals/UART/FIFO.v
+- dir::../src/Peripherals/UART/UART_Register_IF.v
+- dir::../src/Peripherals/UART/UART_Rx.v
+- dir::../src/Peripherals/UART/UART_Tx.v
+
+# Enable plugin for better SystemVerilog support
+USE_SLANG: True
+SLANG_ARGUMENTS: ['--keep-hierarchy']
+
+# Slightly smaller file sizes
+PRIMARY_GDSII_STREAMOUT_TOOL: klayout
+
+# SDC files
+PNR_SDC_FILE: dir::chip_top.sdc
+SIGNOFF_SDC_FILE: dir::chip_top.sdc
+FALLBACK_SDC: dir::chip_top.sdc
+
+# Power / ground nets
+VDD_NETS:
+- VDD
+GND_NETS:
+- VSS
+
+# We need to add gf180mcu_fd_io__bi_24t
+# due to the unused Y output for output only pads
+IGNORE_DISCONNECTED_MODULES:
+- gf180mcu_fd_io__bi_24t
+- gf180mcu_ws_ip__qrcode_id
+- gf180mcu_ws_ip__shuttle_id
+- gf180mcu_ws_ip__project_id
+- gf180mcu_ws_ip__logo
+- gf180mcu_ws_ip__marker
+
+# Clock
+CLOCK_PORT: clk_PAD
+CLOCK_NET: clk_pad/Y
+CLOCK_PERIOD: 40 # 25 MHz
+
+# Overfix hold violations
+PL_RESIZER_HOLD_SLACK_MARGIN: 0.35
+GRT_RESIZER_HOLD_SLACK_MARGIN: 0.3
+
+# Enable setup buffering and gate cloning to fix setup timing violations
+PL_RESIZER_SETUP_BUFFERING: True
+PL_RESIZER_SETUP_GATE_CLONING: True
+GRT_RESIZER_SETUP_BUFFERING: True
+GRT_RESIZER_SETUP_GATE_CLONING: True
+
+# Enable pre-CTS global design repair step
+RUN_POST_GPL_DESIGN_REPAIR: True
+
+# Enable post-global routing timing optimization
+RUN_POST_GRT_RESIZER_TIMING: True
+
+# Prioritize timing optimization over area during Yosys synthesis
+SYNTH_STRATEGY: "DELAY 1"
+
+# Increase density for more 
+# logic on your die
+PL_TARGET_DENSITY_PCT: 35
+GRT_ALLOW_CONGESTION: true
+
+# Avoid resizer buffer explosion by setting realistic wire length targets (instead of 0)
+DESIGN_REPAIR_MAX_WIRE_LENGTH: 1000
+GRT_DESIGN_REPAIR_MAX_WIRE_LENGTH: 1000
+
+# Loosen constraints for sparse/large layout to prevent buffer explosion
+MAX_FANOUT_CONSTRAINT: 32
+MAX_CAPACITANCE_CONSTRAINT: 1.0
+
+# Allow a larger Y displacement
+PL_MAX_DISPLACEMENT_Y: 200
+
+# Fix antenna violations after DRT
+DRT_ANTENNA_REPAIR_ITERS: 10
+DRT_ANTENNA_REPAIR_MARGIN: 10 # %
+
+# PDN
+PDN_CFG: dir::pdn/pdn_cfg.tcl
+PDN_ENABLE_PINS: False
+
+# PDN - Straps
+PDN_VWIDTH: 5
+PDN_HWIDTH: 5
+PDN_VSPACING: 1
+PDN_HSPACING: 1
+PDN_VPITCH: 75
+PDN_HPITCH: 75
+
+# PDN - Core ring
+PDN_CORE_RING: True
+# Maximum metal width without slotting: 30um
+PDN_CORE_RING_VWIDTH: 25
+PDN_CORE_RING_HWIDTH: 25
+PDN_CORE_RING_CONNECT_TO_PADS: True
+PDN_CORE_VERTICAL_LAYER: Metal4
+PDN_CORE_HORIZONTAL_LAYER: Metal3
+PDN_CORE_RING_CONNECT_TO_PAD_LAYERS: [Metal2]
+
+# Do not error on magic DRC violations
+# Note: Passing magic DRC is not required for the submission.
+# However, it is recommended to fix or carefully review all violations.
+ERROR_ON_MAGIC_DRC: False
+
+# Prevent false positive DRC errors in I/O cells
+MAGIC_GDS_FLATGLOB:
+# For contacts
+- "*_CDNS_*"
+# Foundry provided SRAMs
+- "*$$*"
+- "M1_N*"
+- "M1_P*"
+- "M2_M1*"
+- "M3_M2*"
+- "nmos_5p0*"
+- "nmos_1p2*"
+- "pmos_5p0*"
+- "pmos_1p2*"
+- "via1_*"
+- "ypass_gate*"
+- "G_ring_*"
+# These additional cells must be flattened to get rid of 3.3V devices
+# (DUALGATE drawn into high-level cells)
+- "dcap_103*"
+- "din_*"
+- "mux821_*"
+- "rdummy_*"
+- "pmoscap_*"
+- "xdec_*"
+- "ypredec*"
+- "xpredec*"
+- "prexdec_*"
+- "xdec8_*"
+- "xdec16_*"
+- "xdec32_*"
+- "sa_*"
+
+# Since we cannot meet the minimum density limit on Metal2,
+# ignore active metal on previous and subsequent layers
+# (DM.5_DM.7 and DM.4_DM.6). Dummy metal is moved to active
+# metal during the precheck.
+KLAYOUT_FILLER_OPTIONS:
+  Metal2_ignore_active: true
+
+# Because we have multiple power pads for one power domain
+MAGIC_EXT_UNIQUE: notopports
+
+# Image render settings
+KLAYOUT_RENDER_RESOLUTION: 2048
+KLAYOUT_RENDER_OVERSAMPLING: 3
+KLAYOUT_PROPERTIES: dir::gf180mcu_render.lyp
+
+# DRC settings
+# A high number of workers increases RAM usage,
+# but can significantly improve the performance.
+# workers * threads should equal the available
+# hardware threads for a best possible utilization.
+
+KLAYOUT_DRC_THREADS: 1
+
+# "max" equals max hardware threads
+KLAYOUT_DRC_OPTIONS:
+  decks: "all,-antenna,-density,-cup" # disable CUP for now
+  variant: ref::$PDK
+  workers: max
+
+KLAYOUT_DENSITY_OPTIONS:
+  decks: "density"
+  variant: ref::$PDK
+  workers: max
+
+KLAYOUT_ANTENNA_OPTIONS:
+  decks: "antenna"
+  variant: ref::$PDK
+  workers: max

@@ -1,0 +1,14 @@
+# Ignore large generated folders
+librelane/runs/
+gf180mcu/
+final/
+backups/
+reports/agy_logs/
+cocotb/sim_build/
+
+# Ignore temporary files
+*.tar.gz
+*.log
+result
+.direnv/
+.devenv/
