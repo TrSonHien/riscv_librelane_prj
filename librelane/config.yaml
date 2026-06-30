@@ -121,8 +121,8 @@ PL_RESIZER_SETUP_GATE_CLONING: True
 GRT_RESIZER_SETUP_BUFFERING: True
 GRT_RESIZER_SETUP_GATE_CLONING: True
 
-# Enable pre-CTS global design repair step
-RUN_POST_GPL_DESIGN_REPAIR: True
+# Skip unstable pre-CTS global design repair step
+RUN_POST_GPL_DESIGN_REPAIR: False
 
 # Enable post-global routing timing optimization
 RUN_POST_GRT_RESIZER_TIMING: True

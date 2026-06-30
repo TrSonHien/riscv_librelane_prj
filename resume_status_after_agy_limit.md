@@ -94,3 +94,33 @@ To achieve timing closure, we need to balance buffer insertion without triggerin
    
 3. **Investigate RTL Pipeline Stages:**
    If timing remains highly negative even after buffering, the combinational paths in the CPU pipeline (especially related to Execute cycle / ALU / MDU) need pipeline registers to split the deep logic paths.
+
+---
+
+## 5. Timing Closure Experiments & Variant Analysis (Update: June 30, 2026)
+
+We ran a controlled physical-design-only timing closure experiment using two variants:
+
+### 5.1 Variant B (Post-GPL Design Repair) — FAILED
+- **Configuration:** `RUN_POST_GPL_DESIGN_REPAIR: True`
+- **Result:** Failed during the `OpenROAD.RepairDesignPostGPL` step.
+- **Error:** `[DPL-0036] Detailed placement failed.` (The physical design repair step created placement congestion/overlap that could not be resolved by the detailed placer).
+- **Status:** **Abandoned**. We will not continue using Variant B.
+
+### 5.2 Variant A (Stable Baseline) — SUCCESSFUL RUN / TIMING MET IN NOMINAL
+- **Configuration:**
+  - `RUN_POST_GPL_DESIGN_REPAIR: False`
+  - `RUN_POST_GRT_RESIZER_TIMING: True`
+  - `SYNTH_STRATEGY: "DELAY 1"`
+  - Setup buffering and gate cloning enabled.
+- **Result:** Completed the full PnR flow. Total resizer buffers inserted = 2,331 (no buffer explosion).
+- **Post-Route Timing Slacks:**
+  - `nom_tt_025C_5v00` (Nominal Corner): **`+0.8047 ns`** (Timing closed! TNS = `0.0000`)
+  - `max_ss_125C_4v50` (Worst Corner): **`-41.5407 ns`** (TNS = `-11784.00`)
+
+### 5.3 Bottleneck Analysis & Next Timing-Closure Direction
+- **Remaining Bottleneck:** The critical timing path in the worst corner (`max_ss`) starts from the Decode stage and goes through the combinational Stall/Hazard detection logic back to the PC control MUX:
+  `Decode RS1_D_r -> Stall/Hazard Logic -> PCPlus4D pipeline registers`
+- **MDU Pipeline Strategy:** The Multiplier-Divider Unit (MDU) does not appear in the top 10 worst setup paths. Therefore, we **should not pipeline the MDU yet**, as it is not the limiting bottleneck at the current 25 MHz clock target.
+- **Future Direction:** The next real timing-closure direction is **targeted RTL optimization of the Hazard/Stall control path** (e.g., registering hazard decision registers or rewriting the stall logic to execute one cycle earlier) to resolve the inter-stage combinational feedback paths, rather than trying more post-GPL physical repair experiments.
+

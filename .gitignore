@@ -8,6 +8,7 @@ cocotb/sim_build/
 
 # Ignore temporary files
 *.tar.gz
+*.tar.zst
 *.log
 result
 .direnv/
