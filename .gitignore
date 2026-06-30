@@ -6,6 +6,11 @@ backups/
 reports/agy_logs/
 cocotb/sim_build/
 
+# Ignore state-saving and report md files
+AGY_RESUME_RISCV_LIBRELANE_SAVEPOINT.md
+resume_status_after_agy_limit.md
+timing_closure_proposal.md
+
 # Ignore temporary files
 *.tar.gz
 *.tar.zst
