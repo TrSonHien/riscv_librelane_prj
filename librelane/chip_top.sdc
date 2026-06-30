@@ -58,6 +58,7 @@ set clk_core_input_ports [get_ports {
 
 set_input_delay -min 0 -clock $clocks $clk_core_input_ports
 set_input_delay -max $input_delay_value -clock $clocks $clk_core_input_ports
+set_false_path -from [get_ports rst_n_PAD]
 
 # Output load
 set cap_load [expr $::env(OUTPUT_CAP_LOAD) / 1000.0]
