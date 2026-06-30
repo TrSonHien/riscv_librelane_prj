@@ -128,7 +128,7 @@ RUN_POST_GPL_DESIGN_REPAIR: False
 RUN_POST_GRT_RESIZER_TIMING: True
 
 # Prioritize timing optimization over area during Yosys synthesis
-SYNTH_STRATEGY: "DELAY 1"
+SYNTH_STRATEGY: "DELAY 2"
 
 # Increase density for more 
 # logic on your die
