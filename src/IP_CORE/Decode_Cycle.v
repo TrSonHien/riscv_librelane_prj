@@ -27,6 +27,9 @@ module Decode_Cycle (
 	input FlushD,
 	input StallD,
 	input HoldE,
+	input FlushE,
+	input [1:0] ForwardA_D,
+	input [1:0] ForwardB_D,
 	
 	// -----------------------------
 	// Output đi sang Exceucte
@@ -66,7 +69,10 @@ module Decode_Cycle (
 	// PC
 	// -----------------------------
 	output [31:0] PCE,
-	output [31:0] PCPlus4E
+	output [31:0] PCPlus4E,
+
+	output [1:0] ForwardA_E,
+	output [1:0] ForwardB_E
 );
 
 	wire RegWriteD;
@@ -113,6 +119,8 @@ module Decode_Cycle (
 	
 	reg [31:0] PCD_r;
 	reg [31:0] PCPlus4D_r;
+	reg [1:0] ForwardA_D_r;
+	reg [1:0] ForwardB_D_r;
 
 	// =============== Control Unit ===============
 	Control_Unit control_top (
@@ -199,8 +207,10 @@ module Decode_Cycle (
 			
 			PCD_r			<= 32'h0000_0000;
 			PCPlus4D_r		<= 32'h0000_0000;
+			ForwardA_D_r	<= 2'b00;
+			ForwardB_D_r	<= 2'b00;
 		end
-		
+
 		else if (FlushD) begin
 			RegWriteD_r		<= 0;
 			MemReadD_r		<= 0;
@@ -226,6 +236,8 @@ module Decode_Cycle (
 			
 			PCD_r			<= 32'h0000_0000;
 			PCPlus4D_r		<= 32'h0000_0000;
+			ForwardA_D_r	<= 2'b00;
+			ForwardB_D_r	<= 2'b00;
 		end
 
 		// BRAM stall: giữ nguyên toàn bộ ID/EX để I1 re-execute cycle sau
@@ -233,8 +245,8 @@ module Decode_Cycle (
 		end
 
 		// Thêm tín hiệu StallD
-		else if (StallD) begin
-			// Bubble: Chỉ zero control 
+		else if (FlushE || StallD) begin
+			// Bubble: Chỉ zero control
 			RegWriteD_r		<= 0;
 			MemReadD_r		<= 0;
 			MemWriteD_r		<= 0;
@@ -261,8 +273,10 @@ module Decode_Cycle (
 
 			PCD_r			<= PCD;
 			PCPlus4D_r		<= PCPlus4D;
+			ForwardA_D_r	<= 2'b00;
+			ForwardB_D_r	<= 2'b00;
 		end
-		
+
 		else if (!StallD) begin
 			RegWriteD_r		<= RegWriteD;
 			MemReadD_r		<= MemReadD;
@@ -285,9 +299,10 @@ module Decode_Cycle (
 			RS1_D_r			<= InstrD[19:15];
 			RS2_D_r			<= InstrD[24:20];
 			RD_D_r			<= InstrD[11:7];
-			
 			PCD_r			<= PCD;
 			PCPlus4D_r		<= PCPlus4D;
+			ForwardA_D_r	<= ForwardA_D;
+			ForwardB_D_r	<= ForwardB_D;
 		end
 		
 	end
@@ -322,5 +337,7 @@ module Decode_Cycle (
 	
 	assign PCE				= PCD_r;
 	assign PCPlus4E			= PCPlus4D_r;
-	
+	assign ForwardA_E		= ForwardA_D_r;
+	assign ForwardB_E		= ForwardB_D_r;
+
 endmodule

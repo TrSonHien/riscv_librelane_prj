@@ -69,6 +69,8 @@
         wire StallE;
         wire StallM;
         wire HoldE;
+        wire [1:0] ForwardA_D;
+        wire [1:0] ForwardB_D;
         wire [1:0] ForwardA_E;
         wire [1:0] ForwardB_E;
 
@@ -136,6 +138,9 @@
             .FlushD         (FlushD),
             .StallD         (StallD),
             .HoldE          (HoldE),
+            .FlushE         (FlushE),
+            .ForwardA_D     (ForwardA_D),
+            .ForwardB_D     (ForwardB_D),
 
             // Output
             .RegWriteE      (RegWriteE),
@@ -164,7 +169,10 @@
             .RS2_D          (RS2_D),
 
             .PCE            (PCE),
-            .PCPlus4E       (PCPlus4E)
+            .PCPlus4E       (PCPlus4E),
+
+            .ForwardA_E     (ForwardA_E),
+            .ForwardB_E     (ForwardB_E)
         );
 
 
@@ -298,17 +306,13 @@
             .clk            (clk),
             .reset          (reset),
 
+            .RegWriteE      (RegWriteE),
             .RegWriteM      (RegWriteM),
-            .RegWriteW_fwd  (RegWriteW_fwd),
-
-            .RD_M           (RD_M),
-            .RD_W           (RD_W),
-
-            .RS1_E          (RS1_E),
-            .RS2_E          (RS2_E),
-
             .MemReadE       (MemReadE),
+
             .RD_E           (RD_E),
+            .RD_M           (RD_M),
+
             .RS1_D          (RS1_D),
             .RS2_D          (RS2_D),
 
@@ -321,8 +325,8 @@
             .MDU_Busy       (MDU_Busy),
 
             // Output
-            .ForwardA_E     (ForwardA_E),
-            .ForwardB_E     (ForwardB_E),
+            .ForwardA_D     (ForwardA_D),
+            .ForwardB_D     (ForwardB_D),
             .StallF         (StallF),
             .StallD         (StallD),
             .StallE         (StallE),

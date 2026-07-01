@@ -12,16 +12,11 @@ module Hazard_Unit (
 	input reset,
 
 	// Forwarding
+	input RegWriteE,
 	input RegWriteM,
-	input RegWriteW_fwd,
-	input [4:0] RD_M,
-	input [4:0] RD_W,
-	input [4:0] RS1_E,
-	input [4:0] RS2_E,
-
-	// Stall
 	input MemReadE,
 	input [4:0] RD_E,
+	input [4:0] RD_M,
 	input [4:0] RS1_D,
 	input [4:0] RS2_D,
 
@@ -37,8 +32,8 @@ module Hazard_Unit (
 	input MDU_Busy,
 
 	//Ouput
-	output [1:0] ForwardA_E,
-	output [1:0] ForwardB_E,
+	output [1:0] ForwardA_D,
+	output [1:0] ForwardB_D,
 	output StallF,
 	output StallD,
 	output StallE,
@@ -51,18 +46,19 @@ module Hazard_Unit (
 
 	// =============== FORWARDING ===============
 	Forwarding_Unit forward (
-	
-		// Input 
+
+		// Input
+		.RegWriteE			(RegWriteE),
+		.MemReadE			(MemReadE),
 		.RegWriteM			(RegWriteM),
-		.RegWriteW_fwd			(RegWriteW_fwd),
+		.RD_E				(RD_E),
 		.RD_M				(RD_M),
-		.RD_W				(RD_W),
-		.RS1_E				(RS1_E),
-		.RS2_E				(RS2_E),
-		
+		.RS1_D				(RS1_D),
+		.RS2_D				(RS2_D),
+
 		// Output
-		.ForwardA_E			(ForwardA_E),
-		.ForwardB_E			(ForwardB_E)
+		.ForwardA_D			(ForwardA_D),
+		.ForwardB_D			(ForwardB_D)
 	);
 	
 	
